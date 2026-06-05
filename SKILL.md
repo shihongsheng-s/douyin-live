@@ -550,8 +550,12 @@ print(json.dumps(data, ensure_ascii=False))
 
 ### 桌面保存路径
 
-WSL 下 Windows 桌面路径：`/mnt/c/Users/Administrator/Desktop/`
-由 `generate_html_report.py` 中的 `save_html_to_desktop()` 函数处理，自动生成带时间戳和主播名的文件名。
+自动跨平台检测：
+- **macOS**: `~/Desktop/`
+- **Linux**: `~/Desktop/` 或 `~/桌面/`
+- **WSL**: `/mnt/c/Users/<用户名>/Desktop/`
+
+由 `generate_html_report.py` 中的 `get_desktop_path()` 和 `save_html_to_desktop()` 处理，自动生成带时间戳的文件名。
 
 ### 两种结束方式
 
