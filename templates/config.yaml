@@ -1,0 +1,39 @@
+# ── Douyin Livestream Monitor 配置文件 ──────────────────────
+# 此文件位于: ~/.hermes/skills/social-media/douyin-livestream/config.yaml
+
+# 抓取间隔（秒），建议 >= 60 避免被风控
+interval: 300
+
+# 报告保存路径（相对路径相对于 skill 目录）
+report_path: reports/
+
+# 是否在监控结束后自动生成报告
+auto_report: true
+
+# 最大网络重试次数
+max_retries: 3
+
+# ── 多直播间监控 ──────────────────────────────────────────
+# 可以通过此列表配置同时监控多个直播间
+# 每个条目为一个 room_id
+rooms:
+  # - "738365741507"   # 示例
+  # - "123456789012"   # 第二个直播间
+
+# ── 通知配置（可选）───────────────────────────────────────
+notifications:
+  # 是否在直播结束后发送通知
+  enabled: false
+
+  # 邮件通知（需配置 SMTP）
+  email:
+    smtp_server: ""
+    smtp_port: 587
+    smtp_user: ""
+    smtp_password: ""
+    from_addr: ""
+    to_addr: ""
+
+  # Webhook 通知（如飞书、企业微信）
+  webhook:
+    url: ""
