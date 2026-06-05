@@ -20,20 +20,43 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 from douyin_livestream import generate_report, get_db
 
 
-# Windows 桌面路径（WSL 映射）
-DESKTOP_PATH = Path("/mnt/c/Users/Administrator/Desktop")
+# ── 跨平台桌面路径 ──────────────────────────────────────
+
+def get_desktop_path():
+    """Cross-platform desktop path detection."""
+    import os as _os
+    # WSL
+    if _os.environ.get("WSL_DISTRO_NAME"):
+        users_dir = Path("/mnt/c/Users")
+        if users_dir.exists():
+            for p in sorted(users_dir.iterdir()):
+                if p.name not in ("All Users", "Default", "Default User", "Public", "desktop.ini"):
+                    desktop_candidate = p / "Desktop"
+                    if desktop_candidate.exists():
+                        return desktop_candidate
+        return Path.home() / "Desktop"
+    # macOS
+    if sys.platform == "darwin":
+        return Path.home() / "Desktop"
+    # Linux
+    desktop = Path.home() / "Desktop"
+    if not desktop.exists():
+        cn = Path.home() / "桌面"
+        if cn.exists():
+            return cn
+    return desktop
 
 
 def save_to_desktop(report_content, streamer_name, session_id):
-    """Save report to Windows desktop."""
+    """Save report to desktop (cross-platform)."""
     safe_name = (streamer_name or f"session_{session_id}").replace("/", "_").replace(" ", "_")
     date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"直播运营报告_{safe_name}_{date_str}.md"
-    desktop_file = DESKTOP_PATH / filename
-
-    DESKTOP_PATH.mkdir(parents=True, exist_ok=True)
-    desktop_file.write_text(report_content, encoding="utf-8")
-    return str(desktop_file)
+    desktop_dir = get_desktop_path()
+    desktop_dir.mkdir(parents=True, exist_ok=True)
+    desktop_path = desktop_dir / filename
+    desktop_path.write_text(report_content, encoding="utf-8")
+    return str(desktop_path)
 
 
 def get_session_info(session_id):
