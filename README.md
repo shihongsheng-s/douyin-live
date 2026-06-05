@@ -324,7 +324,7 @@ python3 ~/.hermes/skills/social-media/douyin-livestream/scripts/douyin_livestrea
 ### 报告保存在哪里？
 
 - 技能目录: `~/.hermes/skills/social-media/douyin-livestream/reports/`
-- 桌面（WSL）: `/mnt/c/Users/Administrator/Desktop/`
+- **桌面**: 自动检测（macOS `~/Desktop/` · Linux `~/Desktop/` 或 `~/桌面/` · WSL `/mnt/c/Users/<用户名>/Desktop/`）
 
 ---
 
