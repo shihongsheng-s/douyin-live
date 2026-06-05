@@ -995,7 +995,7 @@ def save_html_report(session_id, output_path=None):
         return None, None
 
     if output_path is None:
-        reports_dir = Path("/home/sheng/.hermes/skills/social-media/douyin-livestream/reports")
+        reports_dir = SKILL_DIR / "reports"
         reports_dir.mkdir(parents=True, exist_ok=True)
         safe_name = (streamer or f"session_{session_id}").replace("/", "_").replace(" ", "_").replace("【", "").replace("】", "")
         date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1007,6 +1007,58 @@ def save_html_report(session_id, output_path=None):
     return html, str(output_path)
 
 
+def get_desktop_path():
+    """
+    Cross-platform desktop path detection.
+
+    Supports:
+    - macOS: ~/Desktop/
+    - Linux: ~/Desktop/ (or XDG config)
+    - WSL: /mnt/c/Users/<username>/Desktop/
+    """
+    import os as _os
+
+    # WSL detection
+    if _os.environ.get("WSL_DISTRO_NAME"):
+        # Find Windows username
+        wsl_home = Path.home()
+        # Try to get Windows username from /mnt/c/Users/
+        users_dir = Path("/mnt/c/Users")
+        if users_dir.exists():
+            # Find the most likely user desktop (non-system folders)
+            for p in sorted(users_dir.iterdir()):
+                if p.name not in ("All Users", "Default", "Default User", "Public", "desktop.ini"):
+                    desktop_candidate = p / "Desktop"
+                    if desktop_candidate.exists():
+                        return desktop_candidate
+        # Fallback: use WSL home
+        return Path.home() / "Desktop"
+
+    # macOS
+    if sys.platform == "darwin":
+        return Path.home() / "Desktop"
+
+    # Linux: check XDG
+    try:
+        import subprocess
+        result = subprocess.run(
+            ["xdg-user-dir", "DESKTOP"], capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return Path(result.stdout.strip())
+    except Exception:
+        pass
+
+    # Linux fallback
+    desktop = Path.home() / "Desktop"
+    if not desktop.exists():
+        # Chinese locale fallback
+        desktop_cn = Path.home() / "桌面"
+        if desktop_cn.exists():
+            return desktop_cn
+    return desktop
+
+
 def save_html_to_desktop(session_id):
     html, streamer = generate_html_report(session_id)
     if not html:
@@ -1014,7 +1066,7 @@ def save_html_to_desktop(session_id):
 
     safe_name = (streamer or f"session_{session_id}").replace("/", "_").replace(" ", "_").replace("【", "").replace("】", "")
     date_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    desktop = Path("/mnt/c/Users/Administrator/Desktop")
+    desktop = get_desktop_path()
     desktop.mkdir(parents=True, exist_ok=True)
     output_path = desktop / f"直播运营报告_{safe_name}_{date_str}.html"
     output_path.write_text(html, encoding="utf-8")
